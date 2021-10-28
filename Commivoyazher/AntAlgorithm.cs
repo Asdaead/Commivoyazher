@@ -49,11 +49,9 @@ namespace Commivoyazher
             
             for (var timer = 0; timer <= MaxTime; timer++)
             {
-                ant.CurrentTown = 0;
+                ant.CurrentTown = startTown;
                 TravelAnt(finishTown);
-                UpdatePheromones();
                 TravelAnt(startTown);
-                UpdatePheromones();
             }
             Console.WriteLine("Алгоритм завершен");
         }
@@ -70,6 +68,7 @@ namespace Commivoyazher
                     ant.CurrentTown = endTown;
                 }
             } while (ant.CurrentTown != destination);
+            UpdatePheromones();
         }
         private void UpdatePheromones()
         {
@@ -107,14 +106,25 @@ namespace Commivoyazher
                     );
                 }
             }
-
-            var chance = random.NextDouble();
+            
             foreach (var variant in variants)
             {
                 variant.Propability /= sumPropability;
-                variant.chancePropability = Math.Abs(variant.Propability - chance) + ant.TownVisits[variant.CityIndex]/100.0;
             }
-            variants = variants.Where(x => ant.TownVisits[x.CityIndex] <=3).OrderBy(x => x.chancePropability).ToList();
+            var chance = random.NextDouble();
+            var lowerLine = 0.0;
+            foreach (var variant in variants)
+            {
+                variant.LowerChanceLine = lowerLine;
+                var higherLine = lowerLine + variant.Propability;
+                variant.HigherChanceLine = higherLine;
+                lowerLine = higherLine;
+            }
+            variants = variants.Where(x => 
+            ant.TownVisits[x.CityIndex] <= VisitMax && 
+            x.LowerChanceLine <= chance && 
+            x.HigherChanceLine >= chance)
+                .ToList();
             return variants.First().CityIndex;
         }
         public class Ant
@@ -126,7 +136,8 @@ namespace Commivoyazher
         {
             public int CityIndex { get; set; }
             public double Propability { get; set; }
-            public double chancePropability { get; set; }
+            public double LowerChanceLine { get; set; }
+            public double HigherChanceLine { get; set; }
         }
     }
 }
