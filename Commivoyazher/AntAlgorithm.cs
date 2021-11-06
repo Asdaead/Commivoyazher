@@ -54,6 +54,16 @@ namespace Commivoyazher
                 TravelAnt(startTown);
             }
             Console.WriteLine("Алгоритм завершен");
+            var result = string.Empty;
+            for (var i = 0; i < citiesCount; i++)
+            {
+                result += "Для " + (i + 1) + "-го города: \n";
+                for (var j = 0; j < citiesCount; j++)
+                {
+                    result += j + 1 + " город: " + PheromoneLevel[i, j] + "\n";
+                }
+            }
+            Console.WriteLine(result);
         }
         private void TravelAnt(int destination)
         {
